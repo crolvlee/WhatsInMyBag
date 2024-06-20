@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Posts</title>
+    <link rel="stylesheet" href="/public/bootstrap.min.css">
+    <style>
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+        }
+        .card-img-container {
+            height: 300px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .card-img-top {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        .hashtag-button {
+          display: inline-block;
+          background-color: #ffffff;
+          color: #6c757d;
+          padding: 0.25rem 0.5rem;
+          font-size: 0.875rem;
+          border-radius: 0.25rem;
+          margin-right: 0.5rem;
+          margin-bottom: 0.5rem;
+          border: 1px solid #6c757d;
+          border-radius: 1rem;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center; /* 페이지네이션 인덱스를 중앙으로 정렬 */
+            list-style: none; /* 기본 리스트 스타일 제거 */
+            padding: 0; /* 기본 패딩 제거 */
+        }
+        .pagination .page-link {
+            color: black; /* 페이지 링크를 검정색으로 변경 */
+            margin: 0 5px; /* 링크 사이의 간격 추가 */
+        }
+        .pagination .page-item.active .page-link {
+            background-color: rgb(105, 105, 105); /* 현재 페이지의 배경을 딤 그레이로 변경 */
+            border-color: rgb(105, 105, 105); /* 현재 페이지의 테두리도 딤 그레이로 변경 */
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>게시글</h1>
+        <a href="/post/new" class="btn btn-outline-dark">글쓰기</a>
+    </div>
+    <% if (!Previews || Previews.length === 0) { %>
+        <p>No posts found.</p>
+    <% } else { %>
+        <div class="row">
+            <% Previews.forEach(Preview => { %>
+                <div class="col-md-4 mb-3">
+                    <a href="/post/<%= Preview.post_id %>/detail" class="card-link">
+                        <div class="card">
+                            <div class="card-img-container">
+                                <img src="<%= Preview.thumbnail %>" class="card-img-top" alt="Post Image">
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title"><%= Preview.post_title %></h5>
+                                <p style="font-size: 12px" class="card-text"><%= Preview.post_content.substring(0, 100) %>...</p>
+                                <div class="mb-2">
+                                    <% Preview.hashtags.split(' ').forEach(hashtag => { %>
+                                        <span class="hashtag-button"><%= hashtag %></span>
+                                    <% }) %>
+                                </div>
+                                <p style="font-size: 12px" class="card-text">작성자: <%= Preview.nickname %></p>
+                                <p style="font-size: 12px" class="card-text">작성일: <%= formatDate(Preview.created_at) %></p>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <small class="text-muted">조회수: <%= Preview.views %></small>
+                                    <small class="text-muted">댓글: <%= Preview.comment_count %></small>
+                                    <small class="text-muted">북마크: <%= Preview.bookmark_count %></small>
+                                    <small class="text-muted">좋아요: <%= Preview.like_count %></small>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            <% }) %>
+        </div>
+
+    <% } %>
+
+    <!-- 페이지네이션 링크 -->
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            <% 
+                const maxPagesToShow = 10;
+                const startPage = Math.floor((currentPage - 1) / maxPagesToShow) * maxPagesToShow + 1;
+                const endPage = Math.min(startPage + maxPagesToShow - 1, totalPages);
+            %>
+
+            <% if (startPage > 1) { %>
+                <li class="page-item">
+                    <a class="page-link" href="/post/posts/?page=<%= startPage - 1 %>">Previous</a>
+                </li>
+            <% } %>
+
+            <% for(let i = startPage; i <= endPage; i++) { %>
+                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                    <a class="page-link" href="/post/posts/?page=<%= i %>"><%= i %></a>
+                </li>
+            <% } %>
+
+            <% if (endPage < totalPages) { %>
+                <li class="page-item">
+                    <a class="page-link" href="/post/posts/?page=<%= endPage + 1 %>">Next</a>
+                </li>
+            <% } %>
+        </ul>
+    </nav>
+</body>
+</html>
+
+
+<input type="hidden" id="Datas" value='<%= JSON.stringify(Previews) %>'>
